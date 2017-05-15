@@ -16,7 +16,7 @@
 /* Begin PBXFileReference section */
 		AA33352B1EC985A0009D6F62 /* AVAssetTest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AVAssetTest.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA33352E1EC985A0009D6F62 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		AA3335301EC985A0009D6F62 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		AA3335301EC985A0009D6F62 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ViewController.swift; path = ../ViewController.swift; sourceTree = "<group>"; };
 		AA3335351EC985A0009D6F62 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AA3335381EC985A0009D6F62 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		AA33353A1EC985A0009D6F62 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -33,6 +33,35 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		AA0E67D41EC98D44001D38D4 /* Images */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Images;
+			sourceTree = "<group>";
+		};
+		AA0E67D51EC98D44001D38D4 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		AA0E67D61EC98D44001D38D4 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		AA0E67D71EC98D44001D38D4 /* ViewControllers */ = {
+			isa = PBXGroup;
+			children = (
+				AA3335301EC985A0009D6F62 /* ViewController.swift */,
+			);
+			path = ViewControllers;
+			sourceTree = "<group>";
+		};
 		AA3335221EC985A0009D6F62 = {
 			isa = PBXGroup;
 			children = (
@@ -52,8 +81,11 @@
 		AA33352D1EC985A0009D6F62 /* AVAssetTest */ = {
 			isa = PBXGroup;
 			children = (
+				AA0E67D41EC98D44001D38D4 /* Images */,
+				AA0E67D51EC98D44001D38D4 /* Models */,
+				AA0E67D61EC98D44001D38D4 /* Services */,
+				AA0E67D71EC98D44001D38D4 /* ViewControllers */,
 				AA33352E1EC985A0009D6F62 /* AppDelegate.swift */,
-				AA3335301EC985A0009D6F62 /* ViewController.swift */,
 				AA3335351EC985A0009D6F62 /* Assets.xcassets */,
 				AA3335371EC985A0009D6F62 /* LaunchScreen.storyboard */,
 				AA33353A1EC985A0009D6F62 /* Info.plist */,
@@ -292,6 +324,7 @@
 				AA33353F1EC985A0009D6F62 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
