@@ -123,41 +123,6 @@ class VideoWriter {
     }
     
     fileprivate func pixelBufferFromImage(_ image: UIImage, _ pixelBufferPool: CVPixelBufferPool) -> CVPixelBuffer? {
-//        var pixelBufferOut: CVPixelBuffer?
-//        let size: CGSize = self.renderSettings.frameSize
-//        let status = CVPixelBufferPoolCreatePixelBuffer(kCFAllocatorDefault, pixelBufferPool, &pixelBufferOut)
-//        if status != kCVReturnSuccess {
-//            fatalError("CVPixelBufferPoolCreatePixelBuffer() failed")
-//        }
-//        
-//        let pixelBuffer = pixelBufferOut!
-//        
-//        CVPixelBufferLockBaseAddress(pixelBuffer, CVPixelBufferLockFlags(rawValue: 0))
-//        
-//        let data = CVPixelBufferGetBaseAddress(pixelBuffer)
-//        let rgbColorSpace = CGColorSpaceCreateDeviceRGB()
-//        let context = CGContext(data: data, width: Int(size.width), height: Int(size.height),
-//                                bitsPerComponent: 8, bytesPerRow: CVPixelBufferGetBytesPerRow(pixelBuffer), space: rgbColorSpace, bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue)
-//        
-//        context!.clear(CGRect(x: 0.0, y: 0.0, width: size.width, height: size.height))
-//        
-//        let horizontalRatio = size.width / image.size.width
-//        let verticalRatio = size.height / image.size.height
-//        let aspectRatio = max(horizontalRatio, verticalRatio) // ScaleAspectFill
-//        //        let aspectRatio = min(horizontalRatio, verticalRatio) // ScaleAspectFit
-//        
-//        let newSize = CGSize(width: image.size.width * aspectRatio, height: image.size.height * aspectRatio)
-//        
-//        let x = newSize.width < size.width ? (size.width - newSize.width) / 2 : 0
-//        let y = newSize.height < size.height ? (size.height - newSize.height) / 2 : 0
-//        
-//        context?.draw(image.cgImage!, in: CGRect(x: x, y: y, width: newSize.width, height: newSize.height ))
-//        
-//        
-//        CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags(rawValue: 0))
-//        
-//        return pixelBuffer
-
         var pixelBufferOut: CVPixelBuffer? = nil
         let status: CVReturn = CVPixelBufferPoolCreatePixelBuffer(kCFAllocatorDefault,
                                                                   pixelBufferPool,
@@ -191,12 +156,13 @@ class VideoWriter {
                 print("addImage nil")
                 return false
         }
+        
         return self.pixelBufferAdaptor.append(pixelBuffer, withPresentationTime: presentationTime)
     }
     
     func loadImages() -> [UIImage] {
         var images: [UIImage] = []
-        for index in 5...35 {
+        for index in 10...20 {
             let fileName: String = "\(index).JPG"
             images.append(UIImage(named: fileName)!)
         }

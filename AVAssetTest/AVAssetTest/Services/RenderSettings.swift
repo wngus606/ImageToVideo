@@ -22,10 +22,23 @@ struct RenderSettings {
     }
     
     var outputURL: URL {
-        let fileManager = FileManager.default
-        if let tmpDirURL = try? fileManager.url(for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: true) {
-            return tmpDirURL.appendingPathComponent("Test").appendingPathExtension("mp4") as URL
-        }
-        fatalError("URLForDirectory() failed")
+        // 앨범에 저장
+//        let fileManager = FileManager.default
+//        if let tmpDirURL = try? fileManager.url(for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: true) {
+//            return tmpDirURL.appendingPathComponent("Test").appendingPathExtension("mp4") as URL
+//        }
+//        fatalError("URLForDirectory() failed")
+        
+        // local document
+        let documentsPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] as String
+        let videoOutputURL = URL(fileURLWithPath: documentsPath).appendingPathComponent("Test.mp4")
+        
+        return videoOutputURL
+    }
+    
+    func removeDocumentMP4Flie() {
+        do {
+            try FileManager.default.removeItem(at: self.outputURL)
+        } catch {}
     }
 }
