@@ -22,7 +22,7 @@ struct RenderSettings {
     }
     
     var outputURL: URL {
-        // 앨범에 저장
+        // 앨범경로
 //        let fileManager = FileManager.default
 //        if let tmpDirURL = try? fileManager.url(for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: true) {
 //            return tmpDirURL.appendingPathComponent("Test").appendingPathExtension("mp4") as URL
