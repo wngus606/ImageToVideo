@@ -11,8 +11,7 @@ import UIKit
 
 class VideoWriter {
     
-    var frameNum = 0
-    
+    fileprivate var threadFlag: Bool = true
     let renderSettings: RenderSettings
     
     var videoWriter: AVAssetWriter!
@@ -76,21 +75,27 @@ class VideoWriter {
     
     func render(progress: @escaping (Progress) -> Void, completion: @escaping () -> Void) {
         precondition(videoWriter != nil, "Call start() to initialze the writer")
+
         
         let queue = DispatchQueue(label: "mediaInputQueue")
         self.videoWriterInput.requestMediaDataWhenReady(on: queue) {
-            let isFinished: Bool = self.appendPixelBuffers(progress: { (prog) in
-                DispatchQueue.main.async {
-                    progress(prog)
-                }
-            })
-            if isFinished {
-                self.videoWriterInput.markAsFinished()
-                self.videoWriter.finishWriting(completionHandler: { 
+            if self.threadFlag {
+                self.threadFlag = false
+                let isFinished: Bool = self.appendPixelBuffers(progress: { (prog) in
                     DispatchQueue.main.async {
-                        completion()
+                        progress(prog)
                     }
                 })
+                
+                if isFinished {
+                    self.videoWriterInput.markAsFinished()
+                    self.videoWriter.finishWriting(completionHandler: {
+                        DispatchQueue.main.async {
+                            self.threadFlag = true
+                            completion()
+                        }
+                    })
+                }
             }
         }
     }
@@ -99,20 +104,50 @@ class VideoWriter {
         var images: [UIImage] = loadImages()
         let currentProgress = Progress(totalUnitCount: Int64(images.count))
         var frameCount: Int64 = 0
-        let frameDuration = CMTimeMake(3,1)
+        var frameNum: Int64 = 0
+        var presentationTime: CMTime = CMTimeMake(0, self.renderSettings.fps)
         while !images.isEmpty {
-            
             if !self.videoWriterInput.isReadyForMoreMediaData {
                 // Inform writer we have more buffers to write.
-                return false
+                print("sleep 1")
+                sleep(1)
             }
-            let image = images.remove(at: 0)
-            let presentationTime = CMTimeMultiply(frameDuration, Int32(frameNum))
-            let success = addImage(image, presentationTime)
+            let baseImage = images.remove(at: 0)
+            print("image count : \(images.count)")
+            presentationTime = CMTimeMake(frameNum, self.renderSettings.fps)
+            print("presentiation seconds0 : \(presentationTime.seconds)")
+            
+            let success = addImage(baseImage, presentationTime)
             if success == false {
                 fatalError("addImage() failed")
             }
-            frameNum += 1
+            
+            if images.count > 0 {
+                // fade
+                let fadeTime: CMTime = CMTimeMake(1, 50)
+                for _ in 1...80 {
+                    presentationTime = CMTimeAdd(presentationTime, fadeTime)
+                }
+                print("presentiation seconds1 : \(presentationTime.seconds)")
+                let fadeImage: UIImage = images[0]
+                for index in 1...19 {
+                    if !self.videoWriterInput.isReadyForMoreMediaData {
+                        // Inform writer we have more buffers to write.
+                        print("Sleep 2")
+                        sleep(1)
+                    }
+                    let success = addFadeImage(baseImage, fadeImage, presentationTime, CGFloat(index)/CGFloat(19))
+                    if !success {
+                        fatalError("addFadeImage() failed")
+                    }
+                    presentationTime = CMTimeAdd(presentationTime, fadeTime)
+                }
+                print("presentiation seconds2 : \(presentationTime.seconds)")
+            }
+            
+            // end fade
+            
+            frameNum += 2
             frameCount += 1
             currentProgress.completedUnitCount = frameCount
             progress(currentProgress)
@@ -148,11 +183,45 @@ class VideoWriter {
         return pixelBufferOut
     }
     
+    fileprivate func crossFadeImage(_ baseImage: UIImage, _ fadeImage: UIImage, _ pixelBufferPool: CVPixelBufferPool, _ alpha: CGFloat) -> CVPixelBuffer? {
+        var pixelBufferOut: CVPixelBuffer? = nil
+        let status: CVReturn = CVPixelBufferPoolCreatePixelBuffer(kCFAllocatorDefault,
+                                                                  pixelBufferPool,
+                                                                  &pixelBufferOut)
+        guard status == kCVReturnSuccess, let pixelBuffer: CVPixelBuffer = pixelBufferOut,
+            let baseCGImage: CGImage = baseImage.cgImage, let fadeCGImage: CGImage = fadeImage.cgImage else {
+            return pixelBufferOut
+        }
+        CVPixelBufferLockBaseAddress(pixelBuffer, CVPixelBufferLockFlags(rawValue: 0))
+        let frameSize: CGSize = self.renderSettings.frameSize
+        let pixelData: UnsafeMutableRawPointer? = CVPixelBufferGetBaseAddress(pixelBuffer)
+        let rgbColorSpace: CGColorSpace = CGColorSpaceCreateDeviceRGB()
+        let context = CGContext(data: pixelData,
+                                width: Int(frameSize.width),
+                                height: Int(frameSize.height),
+                                bitsPerComponent: 8,
+                                bytesPerRow: CVPixelBufferGetBytesPerRow(pixelBuffer),
+                                space: rgbColorSpace,
+                                bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue)
+        
+        let drawRect: CGRect = CGRect(x: 0.0, y: 0.0, width: frameSize.width, height: frameSize.height)
+        context?.draw(baseCGImage, in: drawRect)
+        context?.beginTransparencyLayer(auxiliaryInfo: nil)
+        context?.setAlpha(alpha)
+        context?.draw(fadeCGImage, in: drawRect)
+        context?.endTransparencyLayer()
+        
+        CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags(rawValue: 0))
+        
+        return pixelBuffer
+        
+    }
+    
     func addImage(_ image: UIImage, _ presentationTime: CMTime) -> Bool {
         precondition(pixelBufferAdaptor != nil, "Call start() to initialze the writer")
         
-        guard let pixelBufferPoll = self.pixelBufferAdaptor.pixelBufferPool,
-            let pixelBuffer = pixelBufferFromImage(image, pixelBufferPoll) else {
+        guard let pixelBufferPool = self.pixelBufferAdaptor.pixelBufferPool,
+            let pixelBuffer = pixelBufferFromImage(image, pixelBufferPool) else {
                 print("addImage nil")
                 return false
         }
@@ -160,9 +229,21 @@ class VideoWriter {
         return self.pixelBufferAdaptor.append(pixelBuffer, withPresentationTime: presentationTime)
     }
     
+    func addFadeImage(_ baseImage: UIImage, _ fadeImage: UIImage, _ presentationTime: CMTime, _ alpha: CGFloat) -> Bool {
+        precondition(self.pixelBufferAdaptor != nil, "Call start() to initialze the writer")
+
+        guard let pixelBufferPool = self.pixelBufferAdaptor.pixelBufferPool,
+            let pixelBuffer = crossFadeImage(baseImage, fadeImage, pixelBufferPool, alpha) else {
+            print("addFadeImage error")
+            return false
+        }
+        
+        return self.pixelBufferAdaptor.append(pixelBuffer, withPresentationTime: presentationTime)
+    }
+    
     func loadImages() -> [UIImage] {
         var images: [UIImage] = []
-        for index in 10...20 {
+        for index in 1...30 {
             let fileName: String = "\(index).JPG"
             images.append(UIImage(named: fileName)!)
         }

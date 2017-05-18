@@ -170,7 +170,7 @@ class ViewController: UIViewController {
     func testButtonTouchUpInside(_ sender: UIButton) {
         let imageAnimator: ImageAnimator = ImageAnimator(renderSettings: settings)
         imageAnimator.render(progress: { (progress) in
-            print("progress : \(Float(progress.fractionCompleted))")
+//            print("progress : \(Float(progress.fractionCompleted))")
             self.progressView.progress = Float(progress.fractionCompleted)
         }) { 
             print("Completion!!!!!!!!!")

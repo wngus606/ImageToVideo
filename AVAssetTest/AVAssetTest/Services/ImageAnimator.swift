@@ -46,10 +46,12 @@ class ImageAnimator {
     func render(progress: @escaping (Progress) -> Void, completion: @escaping () -> Void) {
         let outputURL: URL = self.settings.outputURL
         removeFileAtURL(fileURL: outputURL)
+        
         self.videoWriter.start()
         self.videoWriter.render(progress: { (prog) in
             progress(prog)
         }, completion: { (_) in
+            print(outputURL)
             self.saveToLibrary(videoURL: outputURL)
             completion()
         })
