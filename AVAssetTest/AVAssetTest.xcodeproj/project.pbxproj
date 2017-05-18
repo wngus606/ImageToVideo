@@ -20,6 +20,7 @@
 		AA178D871ECD82DB00843C29 /* 7.png in Resources */ = {isa = PBXBuildFile; fileRef = AA178D7E1ECD82DB00843C29 /* 7.png */; };
 		AA178D881ECD82DB00843C29 /* 8.png in Resources */ = {isa = PBXBuildFile; fileRef = AA178D7F1ECD82DB00843C29 /* 8.png */; };
 		AA178D891ECD82DB00843C29 /* 0.png in Resources */ = {isa = PBXBuildFile; fileRef = AA178D801ECD82DB00843C29 /* 0.png */; };
+		AA178D8C1ECD8AB000843C29 /* Vacation_Uke.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = AA178D8B1ECD8AB000843C29 /* Vacation_Uke.mp3 */; };
 		AA33352F1EC985A0009D6F62 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA33352E1EC985A0009D6F62 /* AppDelegate.swift */; };
 		AA3335311EC985A0009D6F62 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA3335301EC985A0009D6F62 /* ViewController.swift */; };
 		AA3335361EC985A0009D6F62 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA3335351EC985A0009D6F62 /* Assets.xcassets */; };
@@ -76,6 +77,7 @@
 		AA178D7E1ECD82DB00843C29 /* 7.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 7.png; sourceTree = "<group>"; };
 		AA178D7F1ECD82DB00843C29 /* 8.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 8.png; sourceTree = "<group>"; };
 		AA178D801ECD82DB00843C29 /* 0.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 0.png; sourceTree = "<group>"; };
+		AA178D8B1ECD8AB000843C29 /* Vacation_Uke.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = Vacation_Uke.mp3; sourceTree = "<group>"; };
 		AA33352B1EC985A0009D6F62 /* AVAssetTest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AVAssetTest.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA33352E1EC985A0009D6F62 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		AA3335301EC985A0009D6F62 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ViewController.swift; path = ../ViewController.swift; sourceTree = "<group>"; };
@@ -208,6 +210,14 @@
 			name = RealImages;
 			sourceTree = "<group>";
 		};
+		AA178D8A1ECD8A9B00843C29 /* Audio */ = {
+			isa = PBXGroup;
+			children = (
+				AA178D8B1ECD8AB000843C29 /* Vacation_Uke.mp3 */,
+			);
+			path = Audio;
+			sourceTree = "<group>";
+		};
 		AA3335221EC985A0009D6F62 = {
 			isa = PBXGroup;
 			children = (
@@ -227,6 +237,7 @@
 		AA33352D1EC985A0009D6F62 /* AVAssetTest */ = {
 			isa = PBXGroup;
 			children = (
+				AA178D8A1ECD8A9B00843C29 /* Audio */,
 				AA178D771ECD82C700843C29 /* RealImages */,
 				AA0E67D41EC98D44001D38D4 /* Images */,
 				AA0E67D61EC98D44001D38D4 /* Services */,
@@ -345,6 +356,7 @@
 				AA82CD311EC9BDA8001AE0DD /* 9.JPG in Resources */,
 				AA82CD051EC9B9D6001AE0DD /* test.storyboard in Resources */,
 				AA82CD411EC9BDA8001AE0DD /* 25.JPG in Resources */,
+				AA178D8C1ECD8AB000843C29 /* Vacation_Uke.mp3 in Resources */,
 				AA3335361EC985A0009D6F62 /* Assets.xcassets in Resources */,
 				AA82CD3B1EC9BDA8001AE0DD /* 19.JPG in Resources */,
 				AA82CD3C1EC9BDA8001AE0DD /* 20.JPG in Resources */,
