@@ -12,6 +12,8 @@ import UIKit
 class VideoWriter {
     
     fileprivate var threadFlag: Bool = true
+    fileprivate let grayFloat: CGFloat = 0.05
+    
     let renderSettings: RenderSettings
     
     var videoWriter: AVAssetWriter!
@@ -162,25 +164,49 @@ class VideoWriter {
         let status: CVReturn = CVPixelBufferPoolCreatePixelBuffer(kCFAllocatorDefault,
                                                                   pixelBufferPool,
                                                                   &pixelBufferOut)
-        if status == kCVReturnSuccess, let pixelBuffer: CVPixelBuffer = pixelBufferOut {
-            let frameSize: CGSize = self.renderSettings.frameSize
-            CVPixelBufferLockBaseAddress(pixelBuffer, CVPixelBufferLockFlags(rawValue: 0))
-            let pixelData = CVPixelBufferGetBaseAddress(pixelBuffer)
-            let rgbColorSpace = CGColorSpaceCreateDeviceRGB()
-            let context = CGContext(data: pixelData,
-                                    width: Int(frameSize.width),
-                                    height: Int(frameSize.height),
-                                    bitsPerComponent: 8,
-                                    bytesPerRow: CVPixelBufferGetBytesPerRow(pixelBuffer),
-                                    space: rgbColorSpace,
-                                    bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue)
-            context?.clear(CGRect(x: 0.0, y: 0.0, width: frameSize.width, height: frameSize.height))
-            context?.draw(image.cgImage!, in: CGRect(x: 0.0, y: 0.0, width: frameSize.width, height: frameSize.height))
-            CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags(rawValue: 0))
-            return pixelBuffer
+        guard status == kCVReturnSuccess,
+            let pixelBuffer: CVPixelBuffer = pixelBufferOut,
+            let cgImage: CGImage = image.cgImage else {
+            return pixelBufferOut
         }
         
-        return pixelBufferOut
+        let frameSize: CGSize = self.renderSettings.frameSize
+        CVPixelBufferLockBaseAddress(pixelBuffer, CVPixelBufferLockFlags(rawValue: 0))
+        let pixelData = CVPixelBufferGetBaseAddress(pixelBuffer)
+        let rgbColorSpace = CGColorSpaceCreateDeviceRGB()
+        let context = CGContext(data: pixelData,
+                                width: Int(frameSize.width),
+                                height: Int(frameSize.height),
+                                bitsPerComponent: 8,
+                                bytesPerRow: CVPixelBufferGetBytesPerRow(pixelBuffer),
+                                space: rgbColorSpace,
+                                bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue)
+        context?.clear(CGRect(origin: CGPoint.zero, size: frameSize))
+        context?.addRect(CGRect(origin: CGPoint.zero, size: frameSize))
+        context?.setFillColor(gray: grayFloat, alpha: 1.0)
+        context?.fillPath()
+        
+        let horizontalRatio = frameSize.width / image.size.width
+        let verticalRatio = frameSize.height / image.size.height
+        //            let aspectRatio = max(horizontalRatio, verticalRatio) // ScaleAspectFill
+        let aspectRatio = min(horizontalRatio, verticalRatio) // ScaleAspectFit
+        
+        var drawRect: CGRect!
+        
+        if image.size.width < image.size.height {
+            // 세로로 찍은 사진
+            let newSize: CGSize = CGSize(width: image.size.width * aspectRatio, height: image.size.height * aspectRatio)
+            let x: CGFloat = newSize.width < frameSize.width ? (frameSize.width - newSize.width) / 2 : 0
+            drawRect = CGRect(x: x, y: 0.0, width: newSize.width, height: newSize.height)
+        } else {
+            // 가로로 찍은 사진
+            drawRect = CGRect(x: 0.0, y: 0.0, width: frameSize.width, height: frameSize.height)
+        }
+        
+        context?.draw(cgImage, in: drawRect)
+        
+        CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags(rawValue: 0))
+        return pixelBuffer
     }
     
     fileprivate func crossFadeImage(_ baseImage: UIImage, _ fadeImage: UIImage, _ pixelBufferPool: CVPixelBufferPool, _ alpha: CGFloat) -> CVPixelBuffer? {
@@ -188,10 +214,13 @@ class VideoWriter {
         let status: CVReturn = CVPixelBufferPoolCreatePixelBuffer(kCFAllocatorDefault,
                                                                   pixelBufferPool,
                                                                   &pixelBufferOut)
-        guard status == kCVReturnSuccess, let pixelBuffer: CVPixelBuffer = pixelBufferOut,
-            let baseCGImage: CGImage = baseImage.cgImage, let fadeCGImage: CGImage = fadeImage.cgImage else {
+        guard status == kCVReturnSuccess,
+            let pixelBuffer: CVPixelBuffer = pixelBufferOut,
+            let baseCGImage: CGImage = baseImage.cgImage,
+            let fadeCGImage: CGImage = fadeImage.cgImage else {
             return pixelBufferOut
         }
+        
         CVPixelBufferLockBaseAddress(pixelBuffer, CVPixelBufferLockFlags(rawValue: 0))
         let frameSize: CGSize = self.renderSettings.frameSize
         let pixelData: UnsafeMutableRawPointer? = CVPixelBufferGetBaseAddress(pixelBuffer)
@@ -203,13 +232,55 @@ class VideoWriter {
                                 bytesPerRow: CVPixelBufferGetBytesPerRow(pixelBuffer),
                                 space: rgbColorSpace,
                                 bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue)
+    
+        context?.clear(CGRect(origin: CGPoint.zero, size: frameSize))
+        context?.addRect(CGRect(origin: CGPoint.zero, size: frameSize))
+
+        let baseHorizontalRatio = frameSize.width / baseImage.size.width
+        let baseVerticalRatio = frameSize.height / baseImage.size.height
+        let fadeHorizontalRatio = frameSize.width / fadeImage.size.width
+        let fadeVerticalRatio = frameSize.height / fadeImage.size.height
+//        let aspectRatio = max(horizontalRatio, verticalRatio) // ScaleAspectFill
+        let baseAspectRatio = min(baseHorizontalRatio, baseVerticalRatio) // ScaleAspectFit
+        let fadeAspectRatio = min(fadeHorizontalRatio, fadeVerticalRatio) // ScaleAspectFit
         
-        let drawRect: CGRect = CGRect(x: 0.0, y: 0.0, width: frameSize.width, height: frameSize.height)
-        context?.draw(baseCGImage, in: drawRect)
+        var baseRect: CGRect!
+        var fadeRect: CGRect!
+        if baseImage.size.width < baseImage.size.height {
+            // 세로로 찍은 사진
+            let newSize: CGSize = CGSize(width: baseImage.size.width * baseAspectRatio, height: baseImage.size.height * baseAspectRatio)
+            let x: CGFloat = newSize.width < frameSize.width ? (frameSize.width - newSize.width) / 2 : 0
+            baseRect = CGRect(x: x, y: 0.0, width: newSize.width, height: newSize.height)
+        } else {
+            // 가로로 찍은 사진
+            baseRect = CGRect(x: 0.0, y: 0.0, width: frameSize.width, height: frameSize.height)
+        }
+        
+        if fadeImage.size.width < fadeImage.size.height {
+            // 세로로 찍은 사진
+            let newSize: CGSize = CGSize(width: fadeImage.size.width * fadeAspectRatio, height: fadeImage.size.height * fadeAspectRatio)
+            let x: CGFloat = newSize.width < frameSize.width ? (frameSize.width - newSize.width) / 2 : 0
+            fadeRect = CGRect(x: x, y: 0.0, width: newSize.width, height: newSize.height)
+        } else {
+            // 가로로 찍은 사진
+            fadeRect = CGRect(x: 0.0, y: 0.0, width: frameSize.width, height: frameSize.height)
+        }
+        
+        context?.draw(baseCGImage, in: baseRect)
         context?.beginTransparencyLayer(auxiliaryInfo: nil)
         context?.setAlpha(alpha)
-        context?.draw(fadeCGImage, in: drawRect)
+        context?.setFillColor(gray: grayFloat, alpha: alpha)
+        context?.drawPath(using: .fill)
+        context?.draw(fadeCGImage, in: fadeRect)
         context?.endTransparencyLayer()
+        
+        
+//        let drawRect: CGRect = CGRect(x: 0.0, y: 0.0, width: frameSize.width, height: frameSize.height)
+//        context?.draw(baseCGImage, in: drawRect)
+//        context?.beginTransparencyLayer(auxiliaryInfo: nil)
+//        context?.setAlpha(alpha)
+//        context?.draw(fadeCGImage, in: drawRect)
+//        context?.endTransparencyLayer()
         
         CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags(rawValue: 0))
         
@@ -243,8 +314,8 @@ class VideoWriter {
     
     func loadImages() -> [UIImage] {
         var images: [UIImage] = []
-        for index in 0...10 {
-            let fileName: String = "\(index).JPG"
+        for index in 0...8 {
+            let fileName: String = "\(index).png"
             images.append(UIImage(named: fileName)!)
         }
         return images
