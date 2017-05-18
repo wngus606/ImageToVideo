@@ -243,7 +243,7 @@ class VideoWriter {
     
     func loadImages() -> [UIImage] {
         var images: [UIImage] = []
-        for index in 1...30 {
+        for index in 0...10 {
             let fileName: String = "\(index).JPG"
             images.append(UIImage(named: fileName)!)
         }
