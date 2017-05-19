@@ -12,8 +12,8 @@ import Photos
 
 struct RenderSettings {
     
-    fileprivate var width: CGFloat = 1920
-    fileprivate var height: CGFloat = 1080
+    fileprivate var width: CGFloat = 1280
+    fileprivate var height: CGFloat = 720
     var fps: Int32 = 1
     var avCodecKey: String = AVVideoCodecH264
     
