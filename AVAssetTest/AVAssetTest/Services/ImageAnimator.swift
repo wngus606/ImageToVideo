@@ -52,7 +52,7 @@ class ImageAnimator {
             progress(prog)
         }, completion: { (_) in
             print(outputURL)
-            self.saveToLibrary(videoURL: outputURL)
+//            self.saveToLibrary(videoURL: outputURL)
             completion()
         })
     }

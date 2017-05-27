@@ -11,7 +11,7 @@ import UIKit
 import Photos
 
 struct RenderSettings {
-    
+    // 1280:720, 1600:900
     fileprivate var width: CGFloat = 1280
     fileprivate var height: CGFloat = 720
     var fps: Int32 = 1
